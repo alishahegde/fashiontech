@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANRCHSM Trend Database</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --white:#fff; --off:#F8F7F5; --rule:#DEDEDE; --rule-dark:#B8B8B8; --ink:#0A0A0A;
+      --mid:#4A4A4A; --muted:#8A8A8A; --faint:#C8C8C8; --accent:#E8173A;
+      --disp:'Barlow Condensed', sans-serif; --body:'Barlow', sans-serif; --mono:'IBM Plex Mono', monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:var(--body); color:var(--ink); background:var(--white); }
+    .topbar { position:sticky; top:0; z-index:10; background:#fff; border-bottom:1px solid var(--ink); }
+    .meta-row { height:36px; border-bottom:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; padding:0 20px; font: 10px var(--mono); letter-spacing:2px; color:var(--muted); }
+    .brand-row { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:14px 20px; }
+    .wordmark { font-family:var(--disp); font-weight:900; font-size:38px; letter-spacing:-1px; }
+    .season { font-family:var(--disp); font-size:24px; font-weight:700; letter-spacing:2px; color:var(--accent); }
+    .notice { background:var(--off); border-bottom:1px solid var(--rule); padding:12px 20px; font:10px var(--mono); letter-spacing:1.6px; color:var(--mid); }
+    .controls { padding:16px 20px; border-bottom:1px solid var(--rule); display:grid; grid-template-columns: 1.2fr repeat(4, auto); gap:14px; align-items:start; }
+    .controls label { display:block; margin-bottom:6px; font:10px var(--mono); letter-spacing:2px; color:var(--muted); }
+    .controls input, .controls select { width:100%; border:1px solid var(--rule-dark); background:#fff; padding:10px 12px; font:12px var(--mono); color:var(--ink); }
+    .summary { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; padding:10px 20px; background:var(--off); border-bottom:1px solid var(--rule); font:10px var(--mono); letter-spacing:2px; color:var(--muted); }
+    .legend { display:flex; gap:14px; flex-wrap:wrap; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
+    .card { border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:18px; min-height:225px; }
+    .card:hover { background:var(--off); }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px; }
+    .type { font-family:var(--disp); font-size:10px; font-weight:800; letter-spacing:2px; }
+    .status { font-family:var(--disp); font-size:10px; font-weight:800; letter-spacing:2px; }
+    .swatch-wrap { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .swatch { width:40px; height:40px; border:1px solid var(--rule); flex-shrink:0; }
+    .hex { font:9px var(--mono); color:var(--muted); letter-spacing:1px; }
+    .name { font-family:var(--disp); font-size:22px; font-weight:800; line-height:1.05; text-transform:uppercase; margin-bottom:10px; }
+    .chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+    .chip { border:1px solid var(--rule); padding:2px 6px; font:8px var(--mono); color:var(--muted); letter-spacing:1.4px; }
+    .source { font-size:11px; color:var(--mid); line-height:1.45; min-height:48px; }
+    .driver { margin-top:10px; font:8px var(--mono); color:var(--faint); letter-spacing:2px; text-transform:uppercase; }
+    .footer { padding:18px 20px 40px; color:var(--muted); font-size:13px; line-height:1.6; border-top:1px solid var(--rule); }
+    .pill { display:inline-block; border:1px solid var(--rule-dark); padding:2px 8px; margin-left:8px; font:9px var(--mono); letter-spacing:1px; color:var(--muted); }
+    @media (max-width: 900px) { .controls { grid-template-columns:1fr 1fr; } }
+    @media (max-width: 600px) { .controls { grid-template-columns:1fr; } .brand-row { flex-direction:column; align-items:flex-start; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="meta-row">
+      <div>ANRCHSM PUBLIC TREND DATABASE</div>
+      <div><span id="itemCountMeta"></span> ITEMS INDEXED</div>
+    </div>
+    <div class="brand-row">
+      <div class="wordmark">ANRCHSM</div>
+      <div class="season">FW26 / SS26</div>
+    </div>
+  </header>
+
+  <div class="notice">
+    Standalone public webpage version. The original file was a React app with live AI/API actions; this version keeps the searchable database and removes login/API dependencies.
+  </div>
+
+  <section class="controls">
+    <div>
+      <label for="search">SEARCH</label>
+      <input id="search" type="text" placeholder="Search by name or source" />
+    </div>
+    <div>
+      <label for="typeFilter">TYPE</label>
+      <select id="typeFilter"></select>
+    </div>
+    <div>
+      <label for="cityFilter">CITY</label>
+      <select id="cityFilter"></select>
+    </div>
+    <div>
+      <label for="seasonFilter">SEASON</label>
+      <select id="seasonFilter"></select>
+    </div>
+    <div>
+      <label for="statusFilter">STATUS</label>
+      <select id="statusFilter"></select>
+    </div>
+  </section>
+
+  <div class="summary">
+    <div><span id="resultsCount"></span> RESULTS <span class="pill" id="totalCount"></span></div>
+    <div class="legend">
+      <span>COLOUR</span>
+      <span>• SILHOUETTE</span>
+      <span>• FABRIC</span>
+      <span>• ACCESSORY</span>
+      <span>• PATTERN</span>
+    </div>
+  </div>
+
+  <main id="grid" class="grid"></main>
+
+  <div class="footer">
+    Upload this file to a GitHub repository as <strong>index.html</strong>, then enable GitHub Pages to make it viewable as a public webpage with no login required. The AI generation/report features from the source were removed because they depended on a browser-side API request. The browsable runway database remains intact.
+  </div>
+
+  <script>
+    const TYPE_META = {
+      color:     { label:"COLOUR",     col:"#E8173A" },
+      style:     { label:"SILHOUETTE", col:"#1A1AE8" },
+      fabric:    { label:"FABRIC",     col:"#0A7A2A" },
+      accessory: { label:"ACCESSORY",  col:"#C87A00" },
+      pattern:   { label:"PATTERN",    col:"#7A0AC8" },
+    };
+    const STATUS_CFG = {
+      peaking:   { label:"PEAK",   col:"#0A0A0A" },
+      rising:    { label:"RISING", col:"#0A7A2A" },
+      declining: { label:"FADING", col:"#8A8A8A" },
+    };
+    const SEED = [
+  {id:"c01",type:"color",name:"Cobalt / Yves Klein Blue",hex:"#1A4FA0",season:"SS26",source:"Loewe, Victoria Beckham, Tove, Miu Miu",driver:"Identity",city:"Paris",status:"peaking"},
+  {id:"c02",type:"color",name:"Royal Purple",hex:"#7B3FA0",season:"FW26",source:"Chloé, Loewe, Mugler, Ferragamo",driver:"Status",city:"Paris",status:"peaking"},
+  {id:"c03",type:"color",name:"Tomato Red",hex:"#CC3A28",season:"FW26",source:"Tom Ford, JPG, Patou, Celine",driver:"Rebellion",city:"Paris",status:"peaking"},
+  {id:"c04",type:"color",name:"Cloud Dancer",hex:"#F5F0E8",season:"FW26",source:"Pantone COY 2026 — Bottega, Dior, Noon by Noor",driver:"Security",city:"New York",status:"rising"},
+  {id:"c05",type:"color",name:"Electric Emerald",hex:"#2E8B44",season:"SS26",source:"Balenciaga, Calvin Klein, Jonathan Anderson Dior",driver:"Rebellion",city:"London",status:"rising"},
+  {id:"c06",type:"color",name:"Mustard Yellow",hex:"#C8A020",season:"FW26",source:"Schiaparelli butter yellow, Milan FW standout",driver:"Status",city:"Milan",status:"rising"},
+  {id:"c07",type:"color",name:"Ballet Slipper Pink",hex:"#E8C4C4",season:"SS26",source:"Chanel Charvet shirt, seen on Jacob Elordi",driver:"Comfort",city:"New York",status:"rising"},
+  {id:"c08",type:"color",name:"Powder Pink",hex:"#F2B8C6",season:"SS25",source:"Alaïa, Khaite, Brandon Maxwell, Chanel, Miu Miu",driver:"Comfort",city:"New York",status:"declining"},
+  {id:"c09",type:"color",name:"Chocolate Brown",hex:"#3B1F1A",season:"FW25",source:"Max Mara, dominant neutral anchor",driver:"Security",city:"Paris",status:"peaking"},
+  {id:"c10",type:"color",name:"Cerulean Blue",hex:"#5B8DBE",season:"SS25",source:"Bottega Veneta, JW Anderson, Schiaparelli, Miu Miu",driver:"Identity",city:"London",status:"declining"},
+  {id:"c11",type:"color",name:"Military Khaki",hex:"#4A5C3A",season:"FW26",source:"Pre-Fall 26 utilitarian direction, FW26 Paris",driver:"Security",city:"London",status:"rising"},
+  {id:"c12",type:"color",name:"24K Gold / Canary",hex:"#C8A060",season:"SS26",source:"Bottega Veneta, Saint Laurent",driver:"Status",city:"Paris",status:"rising"},
+  {id:"s01",type:"style",name:"Skirt Suit Revival",season:"FW26",source:"PFW FW26 — departure from oversized pantsuit era",driver:"Status",city:"Paris",status:"rising"},
+  {id:"s02",type:"style",name:"Stirrup / Skinny Trousers",season:"FW26",source:"Milan + Paris FW26 — building toward mass adoption",driver:"Identity",city:"Milan",status:"rising"},
+  {id:"s03",type:"style",name:"Funnel Neck Outerwear",season:"FW26",source:"Definitive styling code — all FW26 cities",driver:"Security",city:"London",status:"peaking"},
+  {id:"s04",type:"style",name:"Architectural Peplum",season:"FW26",source:"Dries Van Noten, Alainpaul, Balmain FW26",driver:"Status",city:"Paris",status:"rising"},
+  {id:"s05",type:"style",name:"Shearling Flight Jacket",season:"FW26",source:"Balmain debut, Dior, Matières Fécales FW26",driver:"Rebellion",city:"New York",status:"rising"},
+  {id:"s06",type:"style",name:"Color Clash / Off-Pairings",season:"SS26",source:"Lime+cobalt, purple+red, orange+gray — Miu Miu, Prada",driver:"Rebellion",city:"Tokyo",status:"peaking"},
+  {id:"s07",type:"style",name:"Equestrian / Horse Girl",season:"FW26",source:"Year of Horse: Stella McCartney, Hermès, Acne Studios",driver:"Status",city:"Paris",status:"rising"},
+  {id:"s08",type:"style",name:"Soft Tailoring",season:"FW26",source:"Prada, Bottega Veneta, Tod's FW26 — lived-in prep",driver:"Comfort",city:"New York",status:"rising"},
+  {id:"s09",type:"style",name:"Oversized Maximalist Shoulder",season:"FW25",source:"Last cycle — now ceding to skirt suit + soft tailoring",driver:"Status",city:"New York",status:"declining"},
+  {id:"s10",type:"style",name:"Headscarf / Neck Scarf",season:"SS26",source:"NYFW SS26: Anna Sui, Calvin Klein, Sandy Liang",driver:"Identity",city:"New York",status:"rising"},
+  {id:"f01",type:"fabric",name:"Low-Pile Faux Fur",season:"FW26",source:"Milan + Paris FW26 — discreet, not statement",driver:"Comfort",city:"Paris",status:"peaking"},
+  {id:"f02",type:"fabric",name:"Calf-Hair Texture",season:"FW26",source:"Next-gen fur — FW26 outerwear evolution",driver:"Status",city:"Milan",status:"rising"},
+  {id:"f03",type:"fabric",name:"Sheer Chiffon / Organza",season:"SS25",source:"Fendi mint, Sportmax — layering over opaque",driver:"Identity",city:"Paris",status:"declining"},
+  {id:"f04",type:"fabric",name:"Luxury Suiting Wool",season:"FW26",source:"Saint Laurent, Givenchy, Victoria Beckham FW26",driver:"Status",city:"Paris",status:"peaking"},
+  {id:"f05",type:"fabric",name:"Technical / Performance",season:"FW26",source:"Gorpcore evolution — utility meets luxury",driver:"Security",city:"Tokyo",status:"rising"},
+  {id:"f06",type:"fabric",name:"Statement Leather",season:"FW26",source:"Marine Serre moto, Schiaparelli FW26 denim-fur print",driver:"Rebellion",city:"London",status:"peaking"},
+  {id:"f07",type:"fabric",name:"Silk / Fluid Satin",season:"SS26",source:"Stirrup + skinny silhouette requires fluid drape",driver:"Status",city:"Paris",status:"rising"},
+  {id:"f08",type:"fabric",name:"Tweed (Heritage Reworked)",season:"FW26",source:"Ladylike skirt suits — Chanel codes absorbed into PFW",driver:"Security",city:"London",status:"rising"},
+  {id:"f09",type:"fabric",name:"Sequin / Metallic Knit",season:"SS26",source:"Dries Van Noten fuchsia sequin blouse, SS26 eveningwear",driver:"Status",city:"New York",status:"rising"},
+  {id:"f10",type:"fabric",name:"Broderie / Lace",season:"FW26",source:"Nina Ricci, Zimmermann FW26 — romance return",driver:"Comfort",city:"Paris",status:"rising"},
+  {id:"a01",type:"accessory",name:"Sculptural Neck Scarf",season:"FW26",source:"Loewe, Celine FW26 — architectural, not draped",driver:"Identity",city:"Paris",status:"peaking"},
+  {id:"a02",type:"accessory",name:"Necklace / Micro Bag",season:"SS26",source:"Coach, Michael Kors, Tory Burch SS26 NYFW",driver:"Identity",city:"New York",status:"rising"},
+  {id:"a03",type:"accessory",name:"Furry Sleeve Detail",season:"FW26",source:"Schiaparelli, Nina Ricci, Marine Serre FW26 Paris",driver:"Status",city:"Paris",status:"rising"},
+  {id:"a04",type:"accessory",name:"Over-The-Knee Boots",season:"FW26",source:"Hermès, Acne Studios equestrian FW26",driver:"Status",city:"Paris",status:"peaking"},
+  {id:"a05",type:"accessory",name:"Belted Blazer (Cinched)",season:"FW26",source:"Dries Van Noten, Schiaparelli FW26 — waist definition",driver:"Status",city:"Paris",status:"rising"},
+  {id:"a06",type:"accessory",name:"Pillbox Hat",season:"FW25",source:"'50s revival — Chloé, Gucci FW25",driver:"Identity",city:"London",status:"declining"},
+  {id:"a07",type:"accessory",name:"Silk Headscarf",season:"SS26",source:"Anna Sui, Calvin Klein, Sandy Liang SS26",driver:"Identity",city:"New York",status:"rising"},
+  {id:"a08",type:"accessory",name:"Statement Brooch",season:"FW26",source:"Zimmermann shawls, vintage codes in FW26",driver:"Status",city:"Paris",status:"rising"},
+  {id:"a09",type:"accessory",name:"Cobalt Blue Handbag",season:"SS26",source:"Entry-level cobalt trend — totes + crossbodies",driver:"Identity",city:"London",status:"peaking"},
+  {id:"a10",type:"accessory",name:"High-Vamp Heels",season:"SS26",source:"2026 shoe trends — elongating stirrup silhouette",driver:"Status",city:"Paris",status:"rising"},
+  {id:"p01",type:"pattern",name:"Colorblock Primaries",season:"SS26",source:"Miu Miu, Prada — red/cobalt, lime/blue",driver:"Rebellion",city:"Milan",status:"peaking"},
+  {id:"p02",type:"pattern",name:"Colorful Plaid / Tartan",season:"FW26",source:"PFW FW26 key pattern — multiple houses",driver:"Identity",city:"London",status:"rising"},
+  {id:"p03",type:"pattern",name:"Animal Print (Heritage)",season:"FW26",source:"Givenchy FW26 — architectural context",driver:"Rebellion",city:"Paris",status:"rising"},
+  {id:"p04",type:"pattern",name:"18th-Century Jacquard",season:"FW26",source:"Paris FW26 — Nina Ricci Marie Antoinette ref",driver:"Identity",city:"Paris",status:"rising"},
+  {id:"p05",type:"pattern",name:"Head-to-Toe Monochrome",season:"FW26",source:"Tomato red + royal purple mono — all PFW houses",driver:"Status",city:"Paris",status:"peaking"},
+  {id:"p06",type:"pattern",name:"Mixed Print Clash",season:"SS25",source:"Miu Miu, Marni SS25 — unexpected print combinations",driver:"Rebellion",city:"Milan",status:"declining"},
+  {id:"p07",type:"pattern",name:"Equestrian / Herringbone",season:"FW26",source:"Horse girl codes: belted blazers, herringbone coats",driver:"Status",city:"London",status:"rising"},
+
+    ];
+
+    const els = {
+      search: document.getElementById('search'),
+      type: document.getElementById('typeFilter'),
+      city: document.getElementById('cityFilter'),
+      season: document.getElementById('seasonFilter'),
+      status: document.getElementById('statusFilter'),
+      grid: document.getElementById('grid'),
+      resultsCount: document.getElementById('resultsCount'),
+      totalCount: document.getElementById('totalCount'),
+      itemCountMeta: document.getElementById('itemCountMeta'),
+    };
+
+    function uniq(arr) { return ['ALL', ...new Set(arr.filter(Boolean))]; }
+    function fillSelect(el, values) {
+      el.innerHTML = values.map(v => `<option value="${v}">${v}</option>`).join('');
+    }
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    fillSelect(els.type, uniq(SEED.map(i => i.type.toUpperCase())));
+    fillSelect(els.city, uniq(SEED.map(i => i.city?.toUpperCase())));
+    fillSelect(els.season, uniq(SEED.map(i => i.season?.toUpperCase())));
+    fillSelect(els.status, ['ALL', 'PEAKING', 'RISING', 'DECLINING']);
+    els.totalCount.textContent = `TOTAL ${SEED.length}`;
+    els.itemCountMeta.textContent = SEED.length;
+
+    function matches(item) {
+      const q = els.search.value.trim().toLowerCase();
+      if (els.type.value !== 'ALL' && item.type.toUpperCase() !== els.type.value) return false;
+      if (els.city.value !== 'ALL' && (item.city || '').toUpperCase() !== els.city.value) return false;
+      if (els.season.value !== 'ALL' && (item.season || '').toUpperCase() !== els.season.value) return false;
+      if (els.status.value !== 'ALL' && (item.status || '').toUpperCase() !== els.status.value) return false;
+      if (q) {
+        const hay = `${item.name || ''} ${item.source || ''} ${item.driver || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }
+
+    function card(item) {
+      const meta = TYPE_META[item.type] || TYPE_META.style;
+      const st = STATUS_CFG[item.status] || STATUS_CFG.rising;
+      return `
+        <article class="card">
+          <div class="top">
+            <div class="type" style="color:${meta.col}">${meta.label}</div>
+            <div class="status" style="color:${st.col}">${st.label}</div>
+          </div>
+          ${item.hex ? `<div class="swatch-wrap"><div class="swatch" style="background:${esc(item.hex)}"></div><div class="hex">${esc(item.hex)}</div></div>` : ''}
+          <div class="name">${esc(item.name)}</div>
+          <div class="chips">
+            <span class="chip">${esc(item.season || '')}</span>
+            <span class="chip">${esc((item.city || '').toUpperCase())}</span>
+          </div>
+          <div class="source">${esc(item.source || '')}</div>
+          <div class="driver">${esc(item.driver || '')}</div>
+        </article>`;
+    }
+
+    function render() {
+      const data = SEED.filter(matches);
+      els.resultsCount.textContent = data.length;
+      els.grid.innerHTML = data.map(card).join('');
+    }
+
+    ['input','change'].forEach(evt => {
+      els.search.addEventListener(evt, render);
+      els.type.addEventListener(evt, render);
+      els.city.addEventListener(evt, render);
+      els.season.addEventListener(evt, render);
+      els.status.addEventListener(evt, render);
+    });
+    render();
+  </script>
+</body>
+</html>
